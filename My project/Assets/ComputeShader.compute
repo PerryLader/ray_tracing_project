@@ -1,0 +1,104 @@
+#pragma kernel CSMain
+
+// Data structures
+struct Triangle
+{
+    float3 v0;
+    float3 v1;
+    float3 v2;
+    float3 norm;
+};
+
+struct Ray
+{
+    float3 dir;
+};
+
+// Buffers
+StructuredBuffer<Triangle> triangles : register(t0);
+StructuredBuffer<Ray> rays : register(t1);
+RWStructuredBuffer<float> distances : register(u2);
+
+// Uniforms
+cbuffer Uniforms : register(b0)
+{
+    float3 rayOrigin;
+    int numRays;
+    float maxDistance;
+    int numTriangles;
+}
+
+groupshared float sharedData[8];
+
+float rayIntersectsTriangle(float3 orig, float3 dir, float3 v0, float3 v1, float3 v2, float3 norm)
+{
+    float3 e0 = v1 - v0;
+    float3 e1 = v0 - v2;
+    float3 barycentricCoord;
+    float temp = 1.0 / dot(norm, dir);
+    float3 e2 = temp * (v0 - orig);
+    float3 i = cross(dir, e2);
+
+    barycentricCoord.y = dot(i, e1);
+    barycentricCoord.z = dot(i, e0);
+    barycentricCoord.x = 1.0 - (barycentricCoord.z + barycentricCoord.y);
+    float new_t = dot(norm, e2);
+
+    if ((new_t < maxDistance) && (new_t > 0.01) && all(barycentricCoord >= float3(0.0, 0.0, 0.0)))
+    {
+        return new_t;
+    }
+    return maxDistance;
+}
+
+[numthreads(8, 128, 1)]
+void CSMain(uint3 id : SV_DispatchThreadID, uint3 groupID : SV_GroupID, uint3 groupThreadID : SV_GroupThreadID)
+{
+    // Extract ray index
+    uint rayIndex = id.y;
+
+    // Check if ray index is valid
+    if (rayIndex < uint(numRays))
+    {
+        float curClosestDistance = maxDistance;
+        uint len = numTriangles / 8;
+        uint blockNum = groupThreadID.x; // Use groupThreadID.x instead of id.x
+
+        // Calculate the range of triangles to process
+        uint firstInBlock = blockNum * len;
+
+        // Iterate over the triangles assigned to this thread group
+        for (uint i = firstInBlock; i < firstInBlock + len && i < numTriangles; i++)
+        {
+            Triangle tri = triangles[i];
+            float new_Distance = rayIntersectsTriangle(rayOrigin, normalize(rays[rayIndex].dir), tri.v0, tri.v1, tri.v2, tri.norm);
+            if (curClosestDistance > new_Distance)
+            {
+                curClosestDistance = new_Distance;
+            }
+        }
+
+        // Store the closest distance found by this thread group into shared memory
+        sharedData[blockNum] = curClosestDistance;
+
+        // Synchronize all threads in the group before accessing shared memory
+        //GroupMemoryBarrierWithGroupSync();
+
+        // The first thread in the group calculates the minimum distance from shared memory
+        if (blockNum == 0)
+        {
+            float minVal = maxDistance;
+            for (int i = 0; i < 8; i++)
+            {
+                float new_Distance = sharedData[i];
+                if (minVal > new_Distance)
+                {
+                    minVal = new_Distance;
+                }
+            }
+
+            // Store the minimum distance found for this ray
+            distances[rayIndex] = minVal;
+        }
+    }
+}

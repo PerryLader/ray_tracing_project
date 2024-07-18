@@ -1,0 +1,7 @@
+﻿  main.cpp
+C:\Users\perry\Desktop\ray_tracing_project\ray_casting\main.cpp(110,34): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\perry\Desktop\ray_tracing_project\ray_casting\main.cpp(125,87): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+glew32s.lib(glew.obj) : warning LNK4099: PDB '' was not found with 'glew32s.lib(glew.obj)' or at ''; linking object as if no debug info
+LINK : warning LNK4098: defaultlib 'MSVCRT' conflicts with use of other libs; use /NODEFAULTLIB:library
+LINK : warning LNK4098: defaultlib 'LIBCMT' conflicts with use of other libs; use /NODEFAULTLIB:library
+  ray_casting_distance_calc.vcxproj -> C:\Users\perry\Desktop\ray_tracing_project\ray_tracing_calc\ray_casting_distance_calc\x64\Debug\ray_casting_distance_calc.exe
