@@ -118,5 +118,36 @@ void originVectorFiller(std::vector<glm::vec4>& originsVector,int numOfSampels)
     }
 }
 
+std::vector<glm::vec4> readRays(const std::string& filename) {
+    std::vector<Ray> rays;
+    std::ifstream file(filename);
+
+    if (!file.is_open()) {
+        std::cerr << "Unable to open file " << filename << std::endl;
+        return rays;
+    }
+
+    std::string line;
+    while (std::getline(file, line)) {
+        // Remove the parentheses
+        line.erase(std::remove(line.begin(), line.end(), '('), line.end());
+        line.erase(std::remove(line.begin(), line.end(), ')'), line.end());
+
+        // Split the line by commas
+        std::istringstream iss(line);
+        std::string x, y, z;
+        if (std::getline(iss, x, ',') && std::getline(iss, y, ',') && std::getline(iss, z, ',')) {
+            int ix = std::stoi(x);
+            int iy = std::stoi(y);
+            int iz = std::stoi(z);
+            rays.emplace_back(ix, iy, iz);
+        }
+    }
+
+    file.close();
+    return rays;
+}
+
+
 
 

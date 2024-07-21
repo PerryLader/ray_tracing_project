@@ -35,6 +35,9 @@
     <None Include="res\computeshader.glsl" />
     <None Include="res\data.csv" />
   </ItemGroup>
+  <ItemGroup>
+    <Object Include="res\City1 Block 1.triangulated.obj" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>

@@ -47,4 +47,7 @@
     <None Include="res\computeshader.glsl" />
     <None Include="res\data.csv" />
   </ItemGroup>
+  <ItemGroup>
+    <Object Include="res\City1 Block 1.triangulated.obj" />
+  </ItemGroup>
 </Project>

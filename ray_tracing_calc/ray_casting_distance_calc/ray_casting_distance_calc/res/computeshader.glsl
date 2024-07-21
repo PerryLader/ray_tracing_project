@@ -121,7 +121,7 @@ void main() {
 
         sharedData[blockNum]=curClosesDistance;
         //sharedData[blockNum]=normalize(rays[rayIndex].dir).y;
-
+        
         memoryBarrierShared ();
         barrier();
 
